@@ -1,4 +1,3 @@
-from time import *
 from util.common import *
 
 # This file holds all of the mechanical tasks, called "routines", that the bot can do
@@ -243,7 +242,6 @@ class goto_boost():
     def __init__(self, boost, target=None):
         self.boost = boost
         self.target = target
-        self.start_time = 
 
     def run(self, agent):
         car_to_boost = self.boost.location - agent.me.location
