@@ -239,9 +239,10 @@ class goto():
 class goto_boost():
     # very similar to goto() but designed for grabbing boost
     # if a target is provided the bot will try to be facing the target as it passes over the boost
-    def __init__(self, boost, target=None):
+    def __init__(self, boost, target=None, use_boost=True):
         self.boost = boost
         self.target = target
+        self.use_boost = use_boost
 
     def run(self, agent):
         car_to_boost = self.boost.location - agent.me.location
@@ -271,10 +272,10 @@ class goto_boost():
         local_target = agent.me.local(final_target - agent.me.location)
 
         angles = defaultPD(agent, local_target)
-        defaultThrottle(agent, 2300)
+        defaultThrottle(agent, 2300, use_boost=self.use_boost)
 
-        agent.controller.boost = self.boost.large if abs(
-            angles[1]) < 0.3 else False
+        # agent.controller.boost = self.boost.large if abs(
+        #     angles[1]) < 0.3 else False
         agent.controller.handbrake = True if abs(
             angles[1]) > 2.3 else agent.controller.handbrake
 

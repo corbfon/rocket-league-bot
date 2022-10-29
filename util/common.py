@@ -44,12 +44,12 @@ def defaultPD(agent, local_target, direction=1.0):
     return target_angles
 
 
-def defaultThrottle(agent, target_speed, direction=1.0):
+def defaultThrottle(agent, target_speed, direction=1.0, use_boost=True):
     # accelerates the car to a desired speed using throttle and boost
     car_speed = agent.me.local(agent.me.velocity)[0]
     t = (target_speed * direction) - car_speed
     agent.controller.throttle = cap((t**2) * sign(t)/1000, -1.0, 1.0)
-    agent.controller.boost = t > 150 and car_speed < 2275 and agent.controller.throttle == 1.0
+    agent.controller.boost = use_boost and t > 150 and car_speed < 2275 and agent.controller.throttle == 1.0
     return car_speed
 
 
