@@ -23,9 +23,7 @@ class GoslingAgent(BaseAgent):
         # goals
         self.friend_goal = goal_object(self.team)
         self.foe_goal = goal_object(not self.team)
-        # A list that acts as the routines stack
-        self.stack = []
-        # A routine
+        # Where we store the bot's current objective
         self.intent = None
         # Game time
         self.time = 0.0
@@ -41,8 +39,7 @@ class GoslingAgent(BaseAgent):
         field_info = self.get_field_info()
         for i in range(field_info.num_boosts):
             boost = field_info.boost_pads[i]
-            self.boosts.append(boost_object(
-                i, boost.location, boost.is_full_boost))
+            self.boosts.append(boost_object(i, boost.location, boost.is_full_boost))
         self.refresh_player_lists(packet)
         self.ball.update(packet)
         self.ready = True
@@ -52,8 +49,7 @@ class GoslingAgent(BaseAgent):
         # Useful to keep separate from get_ready because humans can join/leave a match
         self.friends = [car_object(i, packet) for i in range(packet.num_cars) if
                         packet.game_cars[i].team == self.team and i != self.index]
-        self.foes = [car_object(i, packet) for i in range(
-            packet.num_cars) if packet.game_cars[i].team != self.team]
+        self.foes = [car_object(i, packet) for i in range(packet.num_cars) if packet.game_cars[i].team != self.team]
 
     def set_intent(self, routine):
         self.intent = routine
@@ -61,33 +57,37 @@ class GoslingAgent(BaseAgent):
     def get_intent(self):
         return self.intent
 
+    def clear_intent(self):
+        self.intent = None
+
+    def push(self, routine):
+        # Shorthand for adding a routine to the stack
+        self.set_intent(routine=routine)
+
+    def pop(self):
+        # Shorthand for removing a routine from the stack, returns the routine
+        return self.clear_intent()
+
     def line(self, start, end, color=None):
         color = color if color != None else [255, 255, 255]
-        self.renderer.draw_line_3d(
-            start.copy(), end.copy(), self.renderer.create_color(255, *color))
+        self.renderer.draw_line_3d(start.copy(), end.copy(), self.renderer.create_color(255, *color))
 
-    def debug_stack(self):
+    def debug_intent(self):
         # Draws the stack on the screen
         white = self.renderer.white()
-        for i in range(len(self.stack) - 1, -1, -1):
-            text = self.stack[i].__class__.__name__
-            self.renderer.draw_string_2d(
-                10, 50 + (50 * (len(self.stack) - i)), 3, 3, text, white)
+        text = self.get_intent().__class__.__name__
+        self.renderer.draw_string_2d(10, 100, 3, 3, text, white)
 
-    def clear_intent(self):
-        # Shorthand for clearing intent
-        self.intent = None
+    def clear(self):
+        # Shorthand for clearing the stack of all routines
+        self.clear_intent()
 
     def preprocess(self, packet):
         # Calling the update functions for all of the objects
-        if packet.num_cars != len(self.friends) + len(self.foes) + 1:
-            self.refresh_player_lists(packet)
-        for car in self.friends:
-            car.update(packet)
-        for car in self.foes:
-            car.update(packet)
-        for pad in self.boosts:
-            pad.update(packet)
+        if packet.num_cars != len(self.friends) + len(self.foes) + 1: self.refresh_player_lists(packet)
+        for car in self.friends: car.update(packet)
+        for car in self.foes: car.update(packet)
+        for pad in self.boosts: pad.update(packet)
         self.ball.update(packet)
         self.me.update(packet)
         self.game.update(packet)
@@ -110,8 +110,9 @@ class GoslingAgent(BaseAgent):
         # Run our strategy code
         self.run()
         # run the routine on the end of the stack
-        if self.intent is not None:
-            self.intent.run(self)
+        intent = self.get_intent()
+        if intent is not None:
+            intent.run(self)
         self.renderer.end_rendering()
         # send our updated controller back to rlbot
         return self.controller
@@ -379,9 +380,10 @@ class Vector3:
 
     def normalize(self):
         # Normalize() returns a Vector3 that shares the same direction but has a length of 1.0
-        # Normalize(True) can also be used if you'd like the length of this Vector3 (used for optimization)
         magnitude = self.magnitude()
-        return Vector3(self[0] / magnitude, self[1] / magnitude, self[2] / magnitude)
+        if magnitude != 0:
+            return Vector3(self[0] / magnitude, self[1] / magnitude, self[2] / magnitude)
+        return Vector3(0, 0, 0)
 
     # Linear algebra functions
     def dot(self, value):

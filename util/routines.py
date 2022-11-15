@@ -2,7 +2,6 @@ from util.common import *
 
 # This file holds all of the mechanical tasks, called "routines", that the bot can do
 
-
 class drive():
     def __init__(self, speed, target=None) -> None:
         self.speed = speed
@@ -13,19 +12,6 @@ class drive():
         if self.target is not None:
             relative_target = self.target - agent.me.location
             defaultPD(agent, agent.me.local(relative_target))
-
-class jumper():
-    def __init__(self) -> None:
-        self.jumping = False
-        self.last_jump = 0
-        print('initializing')
-    def run(self, agent):
-        if agent.me.location.z > 20:
-            self.jumping = True
-        if agent.time % 5 == 0 or (self.jumping == True and abs(agent.time - self.last_jump) > 0.75):
-            agent.controller.jump = True
-            print('jumping', agent.time, self.last_jump)
-            self.last_jump = agent.time
 
 
 class atba():
@@ -179,7 +165,7 @@ class flip():
         elif elapsed < 0.3 or (not self.cancel and elapsed < 0.9):
             agent.controller.jump = True
             agent.controller.pitch = self.pitch
-            agent.controller.yaw = self.yaw 
+            agent.controller.yaw = self.yaw
         else:
             agent.set_intent(recovery())
 
@@ -221,7 +207,7 @@ class goto():
         angles = defaultPD(agent, local_target, self.direction)
         defaultThrottle(agent, 2300, self.direction)
 
-        # agent.controller.boost = False
+        agent.controller.boost = False
         agent.controller.handbrake = True if abs(
             angles[1]) > 2.3 else agent.controller.handbrake
 
@@ -445,11 +431,10 @@ class short_shot():
 
     def run(self, agent):
         car_to_ball = (agent.ball.location - agent.me.location).normalize()
-        distance = car_to_ball.magnitude()
+        distance = (agent.ball.location - agent.me.location).magnitude()
         ball_to_target = (self.target - agent.ball.location).normalize()
 
-        relative_velocity = car_to_ball.dot(
-            agent.me.velocity-agent.ball.velocity)
+        relative_velocity = car_to_ball.dot(agent.me.velocity-agent.ball.velocity)
         if relative_velocity != 0.0:
             eta = cap(distance / cap(relative_velocity, 400, 2300), 0.0, 1.5)
         else:

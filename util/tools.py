@@ -35,9 +35,9 @@ def find_hits(agent, targets):
             i += 15 - cap(int(ball_velocity//150), 0, 13)
 
             car_to_ball = ball_location - agent.me.location
-            # Adding a True to a vector's normalize will have it also return the magnitude of the vector
+            # Get the direction and magnitude of the vectors separately
             direction = car_to_ball.normalize()
-            distance = direction.magnitude()
+            distance = car_to_ball.magnitude()
 
             # How far the car must turn in order to face the ball, for forward and reverse
             forward_angle = direction.angle(agent.me.forward)
