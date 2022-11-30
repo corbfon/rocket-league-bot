@@ -12,17 +12,20 @@ class Bot(GoslingAgent):
         if self.kickoff_flag:
             self.set_intent(kickoff())
             return
-        targets = {
-            'at_opponent_goal': (self.foe_goal.left_post, self.foe_goal.right_post),
-            'away_from_our_net': (self.friend_goal.right_post, self.friend_goal.left_post)
-        }
-        hits = find_hits(self,targets)
-        if len(hits['at_opponent_goal']) > 0:
-            self.set_intent(hits['at_opponent_goal'][0])
-            print('at their goal')
+
+        if self.me.boost > 99:
+            self.set_intent(short_shot(self.foe_goal.location))
             return
-        if len(hits['away_from_our_net']) > 0:
-            print('away from our goal')
-            self.set_intent(hits['away_from_our_net'][0])
+        
+        available_boosts = [boost for boost in self.boosts if boost.large and boost.active]
+        closest_boost = None
+        closest_distance = 10000
+        for boost in available_boosts:
+            distance = (self.me.location - boost.location).magnitude()
+            if closest_boost is None or distance < closest_distance:
+                closest_boost = boost
+                closest_distance = distance
+        
+        if closest_boost is not None:
+            self.set_intent(goto(closest_boost.location))
             return
- 
