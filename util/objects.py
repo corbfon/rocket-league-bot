@@ -116,6 +116,24 @@ class GoslingAgent(BaseAgent):
         self.renderer.end_rendering()
         # send our updated controller back to rlbot
         return self.controller
+    
+    def get_closest_large_boost(self):
+        available_boosts = [boost for boost in self.boosts if boost.large and boost.active]
+        closest_boost = None
+        closest_distance = 10000
+        for boost in available_boosts:
+            distance = (self.me.location - boost.location).magnitude()
+            if closest_boost is None or distance < closest_distance:
+                closest_boost = boost
+                closest_distance = distance
+        return closest_boost
+
+    def is_in_front_of_ball(self):
+        me_to_goal = (self.me.location - self.foe_goal.location).magnitude()
+        ball_to_goal = (self.ball.location - self.foe_goal.location).magnitude()
+        if me_to_goal < ball_to_goal + 1000:
+            return True
+        return False
 
     def run(self):
         # override this with your strategy code
