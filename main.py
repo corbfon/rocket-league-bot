@@ -8,6 +8,7 @@ class Bot(GoslingAgent):
     # This function runs every in-game tick (every time the game updates anything)
     def run(self):
         if self.get_intent() is not None:
+            self.debug_intent()
             return
         if self.kickoff_flag:
             self.set_intent(kickoff())

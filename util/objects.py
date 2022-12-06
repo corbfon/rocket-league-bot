@@ -118,7 +118,10 @@ class GoslingAgent(BaseAgent):
         return self.controller
     
     def get_closest_large_boost(self):
-        available_boosts = [boost for boost in self.boosts if boost.large and boost.active]
+        available_boosts = [boost for boost in self.boosts if boost.large
+            and boost.active
+            and (boost.location - self.friend_goal.location).magnitude() < (self.ball.location - self.friend_goal.location).magnitude()
+        ]
         closest_boost = None
         closest_distance = 10000
         for boost in available_boosts:
@@ -131,7 +134,7 @@ class GoslingAgent(BaseAgent):
     def is_in_front_of_ball(self):
         me_to_goal = (self.me.location - self.foe_goal.location).magnitude()
         ball_to_goal = (self.ball.location - self.foe_goal.location).magnitude()
-        if me_to_goal < ball_to_goal + 1000:
+        if me_to_goal > 1000 and me_to_goal < ball_to_goal + 1000:
             return True
         return False
 
