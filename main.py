@@ -8,6 +8,9 @@ class Bot(GoslingAgent):
     # This function runs every in-game tick (every time the game updates anything)
     def run(self):
         self.print_debug()
+        # for idx, boost in enumerate(self.boosts):
+        #     if not boost.active:
+        #         print('found non-active boost', idx, boost.large)
         if self.get_intent() is not None:
             self.debug_intent()
             return
